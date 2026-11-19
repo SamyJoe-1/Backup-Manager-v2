@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backup Manager</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M9 11c0-2 3-3 7-3s7 1 7 3v10c0 2-3 3-7 3s-7-1-7-3z' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M9 16c0 2 3 3 7 3s7-1 7-3' fill='none' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f5f6fa;--panel:#fff;--line:#e4e7ee;--text:#151a2d;--mute:#69718a;--brand:#4f46e5;--brand2:#7c3aed;--soft:#eef0ff;--ok:#0f9d6b;--okbg:#e3f7ee;--bad:#d43a4c;--badbg:#fde8ea;--warn:#b7791f;--warnbg:#fdf3dc;--info:#2563eb;--infobg:#e6efff;--shadow:0 1px 2px rgba(20,25,50,.06),0 8px 24px rgba(20,25,50,.06)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0d1020;--panel:#161a2e;--line:#272c47;--text:#e8eaf6;--mute:#8f96b3;--soft:#22264a;--okbg:#0f3a2c;--badbg:#45161d;--warnbg:#40300f;--infobg:#15264d;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3)}}
+:root[data-theme=dark]{--bg:#0d1020;--panel:#161a2e;--line:#272c47;--text:#e8eaf6;--mute:#8f96b3;--soft:#22264a;--okbg:#0f3a2c;--badbg:#45161d;--warnbg:#40300f;--infobg:#15264d;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--brand);text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+aside{background:var(--panel);border-inline-end:1px solid var(--line);padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;padding:4px 10px 18px}
+.logo i{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;color:#fff;font-style:normal}
+nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--mute);font-weight:500}
+nav a:hover{background:var(--soft);color:var(--text)}
+nav a.on{background:var(--soft);color:var(--brand)}
+nav a b{margin-inline-start:auto;background:var(--brand);color:#fff;border-radius:99px;font-size:11px;padding:1px 7px}
+.foot{margin-top:auto;font-size:12px;color:var(--mute);padding:10px}
+main{padding:26px 30px;min-width:0}
+h1{font-size:22px;margin:0}
+.head{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.head p{margin:2px 0 0;color:var(--mute)}
+.head .sp{flex:1}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px}
+.tile{padding:16px 18px}
+.tile small{color:var(--mute);font-weight:500}
+.tile div{font-size:24px;font-weight:700;margin-top:4px}
+.tile em{font-style:normal;font-size:12px;color:var(--mute)}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn.pri{background:linear-gradient(135deg,var(--brand),var(--brand2));border:0;color:#fff}
+.btn.pri:hover{filter:brightness(1.08);color:#fff}
+.btn.red:hover{border-color:var(--bad);color:var(--bad)}
+.btn.sm{padding:4px 10px;font-size:12px;border-radius:7px}
+.btn:disabled{opacity:.5;cursor:default}
+.bar{display:flex;gap:10px;flex-wrap:wrap;padding:14px;border-bottom:1px solid var(--line);align-items:center}
+input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 11px;outline:0;max-width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--soft)}
+.bar input[type=search]{flex:1;min-width:180px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:start;font-size:12px;color:var(--mute);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap;user-select:none}
+th.s{cursor:pointer}th.s:hover{color:var(--text)}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr.click{cursor:pointer}tbody tr.click:hover{background:var(--soft)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.mute{color:var(--mute)}.small{font-size:12px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--soft);color:var(--brand);white-space:nowrap}
+.pill.done{background:var(--okbg);color:var(--ok)}.pill.failed{background:var(--badbg);color:var(--bad)}
+.pill.running{background:var(--infobg);color:var(--info)}.pill.queued,.pill.cancelled{background:var(--warnbg);color:var(--warn)}
+.pill.running::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.prog{height:6px;background:var(--line);border-radius:9px;overflow:hidden;min-width:120px;margin-top:5px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2));transition:width .5s}
+.pager{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--line);color:var(--mute);font-size:13px}
+.pager .sp{flex:1}
+.empty{padding:46px 20px;text-align:center;color:var(--mute)}
+.empty b{display:block;color:var(--text);font-size:15px;margin-bottom:4px}
+.ov{position:fixed;inset:0;background:rgba(10,12,30,.5);display:flex;z-index:50;animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.modal{margin:auto;width:min(620px,94vw);max-height:92vh;overflow:auto;padding:22px}
+.drawer{margin-inline-start:auto;width:min(860px,100vw);height:100vh;overflow:auto;border-radius:0;padding:24px}
+.modal h2,.drawer h2{margin:0 0 4px;font-size:18px}
+.f{display:grid;gap:5px;margin-top:13px}
+.f label{font-weight:600;font-size:13px}
+.f small{color:var(--mute)}
+.f input,.f select,.f textarea{width:100%}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1;min-width:150px}
+.acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg label{padding:7px 13px;cursor:pointer;font-weight:500;border-right:1px solid var(--line)}
+.seg label:last-child{border:0}
+.seg input{display:none}
+.seg label:has(input:checked){background:var(--soft);color:var(--brand);font-weight:600}
+.pick{border:1px solid var(--line);border-radius:9px;max-height:240px;overflow:auto;padding:6px}
+.pick label{display:flex;gap:8px;align-items:center;padding:4px 8px;border-radius:6px;font-weight:400;cursor:pointer}
+.pick label:hover{background:var(--soft)}
+.pick label span{margin-inline-start:auto;color:var(--mute);font-size:12px}
+.pick .db{font-weight:700;margin-top:4px}
+.pick input{width:auto}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;margin:14px 0}
+.kv dt{color:var(--mute)}.kv dd{margin:0;word-break:break-word}
+pre{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px;overflow:auto;font-size:12px;margin:8px 0}
+.toast{position:fixed;inset-inline-end:20px;bottom:20px;z-index:99;display:grid;gap:8px}
+.toast div{background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;box-shadow:var(--shadow);max-width:420px;animation:fade .2s}
+.toast div.err{background:var(--bad);color:#fff}
+.auth{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(900px 500px at 20% 0,var(--soft),transparent),var(--bg)}
+.auth .card{width:min(400px,100%);padding:28px}
+.banner{background:var(--warnbg);color:var(--warn);padding:10px 14px;border-radius:10px;margin-bottom:16px;display:flex;gap:10px;align-items:center}
+.banner.bad{background:var(--badbg);color:var(--bad)}
+@media(max-width:800px){.app{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:8px}.logo{padding:4px 8px}.foot{display:none}nav{display:flex;flex-wrap:wrap}main{padding:16px}.kv{grid-template-columns:1fr}}
+[dir=rtl] body{font-family:"Segoe UI",Tahoma,"Noto Sans Arabic",system-ui,sans-serif}[dir=rtl] .mono,[dir=rtl] pre{direction:ltr;text-align:left;unicode-bidi:embed}[dir=rtl] td[style*="text-align:right"]{text-align:left!important}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+// ---------- helpers ----------
+const $ = (s, el = document) => el.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+class Raw { constructor(s){ this.s = s; } toString(){ return this.s; } }
+const raw = s => new Raw(s);
+// html`` escapes every interpolated value unless it is raw() or a list of raw()
+const html = (parts, ...vals) => raw(parts.reduce((out, p, i) => {
+  const v = vals[i - 1];
+  return out + (v instanceof Raw ? v.s : Array.isArray(v) ? v.map(x => x instanceof Raw ? x.s : esc(x)).join("") : esc(v)) + p;
+}));
+async function api(method, path, body) {
+  const res = await fetch("/api" + path, { method, headers: method === "GET" ? {} : {"Content-Type":"application/json","X-BM":"1"}, body: body === undefined ? undefined : JSON.stringify(body) });
+  let data = null; try { data = await res.json(); } catch {}
+  if (res.status === 401 && state.user) { state.user = null; render(); }
+  if (!res.ok) throw new Error((data && data.error) || ("Request failed (" + res.status + ")"));
+  return data;
+}
+function toast(msg, err) { const d = document.createElement("div"); d.textContent = msg; if (err) d.className = "err"; $("#toast").append(d); setTimeout(() => d.remove(), err ? 7000 : 3500); }
+const run = fn => async (...a) => { try { await fn(...a); } catch (e) { toast(e.message, true); } };
+const bytes = n => { n = +n || 0; if (n < 1024) return n + " B"; const u = ["KB","MB","GB","TB"]; let i = -1; do { n /= 1024; i++; } while (n >= 1024 && i < 3); return n.toFixed(n < 10 ? 2 : 1) + " " + u[i]; };
+const num = n => (+n || 0).toLocaleString("en");
+const when = t => t ? new Date(t * 1000).toLocaleString(undefined, {dateStyle:"medium", timeStyle:"short"}) : "—";
+const ago = t => { if (!t) return "never"; let s = Math.floor(Date.now()/1000 - t), f = s < 0; s = Math.abs(s);
+  const v = s < 60 ? s + "s" : s < 3600 ? Math.floor(s/60) + "m" : s < 86400 ? Math.floor(s/3600) + "h" : Math.floor(s/86400) + "d"; return f ? "in " + v : v + " ago"; };
+const dur = (a, b) => { if (!a || !b) return "—"; const s = b - a; return s < 60 ? s + "s" : s < 3600 ? Math.floor(s/60) + "m " + (s%60) + "s" : Math.floor(s/3600) + "h " + Math.floor(s%3600/60) + "m"; };
+const kindText = b => (b.method === "files" ? "files" : b.method === "redis" ? "snapshot" : b.method === "postgres" ? (b.content === "all" ? "pg_dump, schema + rows" : b.content === "data" ? "pg_dump, rows only" : "pg_dump, schema only") : b.method === "physical" ? "data files, full" : b.method === "incremental" ? "data files, changes only" : b.content === "all" ? "schema + rows" : b.content === "data" ? "rows only" : "schema only");
+const pill = s => html`<span class="pill ${s}">${s}</span>`;
+
+// ---------- language (Arabic, right-to-left) ----------
+// Static labels are translated in place; names, numbers and messages from the server stay as they are.
+const AR = {"Dashboard":"لوحة التحكم","Backups":"النسخ الاحتياطية","Plans":"الخطط","Sets":"المجموعات","Databases":"قواعد البيانات","Databases & folders":"قواعد البيانات والمجلدات","Destinations":"وجهات التخزين","Jobs":"المهام","Settings":"الإعدادات","Users & access":"المستخدمون والصلاحيات","Activity":"السجل","Sign out":"تسجيل الخروج","Sign in":"تسجيل الدخول","Welcome back.":"مرحباً بعودتك.","E-mail":"البريد الإلكتروني","Password":"كلمة المرور","Create account":"إنشاء الحساب","Create the first account":"إنشاء الحساب الأول",
+"Everything at a glance.":"كل شيء في نظرة واحدة.","Good backups":"نسخ سليمة","Last good backup":"آخر نسخة سليمة","Next scheduled run":"التشغيل المجدول القادم","Failed, last 7 days":"فشلت خلال آخر 7 أيام","Recent jobs":"أحدث المهام","Latest backups":"أحدث النسخ","All backups →":"كل النسخ ←","Pause new jobs":"إيقاف المهام الجديدة مؤقتاً","Resume jobs":"استئناف المهام",
+"Every backup, newest first. Click a row to look inside.":"كل النسخ، الأحدث أولاً. اضغط على صف لرؤية محتواه.","Any status":"أي حالة","Any plan":"أي خطة","Any database":"أي قاعدة بيانات","Backup":"النسخة","Contents":"المحتوى","Status":"الحالة","Size":"الحجم","Rows":"الصفوف","Took":"المدة","Download":"تنزيل","Previous":"السابق","Next":"التالي","‹ Previous":"‹ السابق","Next ›":"التالي ›",
+"done":"تمت","failed":"فشلت","running":"تعمل","queued":"في الانتظار","cancelled":"أُلغيت","verified":"تم التحقق","verify failed":"فشل التحقق","restore tested":"اختُبر الاسترجاع","restore test failed":"فشل اختبار الاسترجاع",
+"Close":"إغلاق","Cancel":"إلغاء","Confirm":"تأكيد","Save":"حفظ","Delete":"حذف","Edit":"تعديل","Add":"إضافة","Test":"اختبار","Run now":"تشغيل الآن","Save plan":"حفظ الخطة","New plan":"خطة جديدة","New set":"مجموعة جديدة","Save set":"حفظ المجموعة",
+"Database server":"خادم قاعدة البيانات","Taken":"وقت الأخذ","Stored in":"مكان التخزين","Verified":"التحقق","Restore test":"اختبار الاسترجاع","Binary log position":"موضع السجل الثنائي","Note":"ملاحظة","Builds on":"مبنية على","not yet":"ليس بعد",
+"Download all (.sql)":"تنزيل الكل (‎.sql)","Verify now":"تحقق الآن","Test restore":"اختبار الاسترجاع","Pin (never auto-delete)":"تثبيت (لا تُحذف تلقائياً)","Unpin":"إلغاء التثبيت","Restore…":"استرجاع…","Browse rows":"تصفح الصفوف","Browse rows…":"تصفح الصفوف…","Structure":"البنية","Schema":"البنية","Download raw file":"تنزيل الملف الخام","Table":"الجدول","SQL size":"حجم SQL","Stored":"المخزَّن","Files in this backup":"ملفات هذه النسخة","File list":"قائمة الملفات",
+"What to back up, how often, where to, and how long to keep it.":"ماذا تُنسخ، وكم مرة، وإلى أين، وكم تُحفظ.","Plan":"الخطة","What":"ماذا","Schedule":"الجدولة","Keep":"مدة الحفظ","Name":"الاسم","Destination":"الوجهة","Method":"الطريقة","What to back up":"ماذا تُنسخ","Whole server":"الخادم كاملاً","Chosen databases":"قواعد بيانات محددة","Chosen tables":"جداول محددة","Schema + rows":"البنية + الصفوف","Rows only":"الصفوف فقط","Schema only":"البنية فقط","Every X hours":"كل عدد من الساعات","Cron line":"سطر Cron","Manual only":"يدوي فقط","Options":"خيارات","Logical (SQL)":"منطقي (SQL)","Physical (hot copy)":"فيزيائي (نسخ حي)","Binary logs":"السجلات الثنائية",
+"Delete backups older than (days)":"حذف النسخ الأقدم من (أيام)","Always keep the newest":"احتفظ دائماً بالأحدث","Speed limit (MB per second)":"حد السرعة (ميغابايت/ثانية)",
+"Details":"التفاصيل","Where backup files are stored. Keep at least one copy off this server.":"مكان تخزين ملفات النسخ. احتفظ بنسخة واحدة على الأقل خارج هذا الخادم.","Host":"المضيف","Port":"المنفذ","User":"المستخدم","Kind":"النوع","Folder":"المجلد",
+"The queue. Long jobs keep running when you close this page, and continue after a restart.":"قائمة الانتظار. المهام الطويلة تستمر عند إغلاق الصفحة وتُستأنف بعد إعادة التشغيل.","Any state":"أي حالة",
+"Where to send alerts.":"إلى أين تُرسل التنبيهات.","Telegram bot token":"رمز بوت تيليغرام","Telegram chat id":"معرّف محادثة تيليغرام","Webhook address":"عنوان Webhook","Save and send a test":"حفظ وإرسال تجربة",
+"Who did what: sign-ins, downloads, deletions, changes.":"من فعل ماذا: تسجيلات الدخول، التنزيلات، الحذف، التغييرات.","When":"متى","Who":"من","Action":"الإجراء","Detail":"التفاصيل","From":"من عنوان",
+"Who can sign in, what each one may do, and tokens for scripts.":"من يستطيع الدخول، وما يُسمح لكل واحد، ورموز للسكربتات.","My account":"حسابي","Change password":"تغيير كلمة المرور","Turn on two-factor sign-in":"تفعيل التحقق بخطوتين","Turn off two-factor":"إيقاف التحقق بخطوتين","Accounts":"الحسابات","Add account":"إضافة حساب","Role":"الدور","Two-factor":"التحقق بخطوتين","Since":"منذ","API tokens":"رموز API","New token":"رمز جديد","Revoke":"إبطال","Created":"أُنشئ","Last used":"آخر استخدام",
+"Run several plans together, for example one per shard, and keep track of which backups belong to the same moment.":"شغّل عدة خطط معاً، مثلاً خطة لكل شارد، واعرف أي النسخ تعود لنفس اللحظة.","Run":"التشغيل","Members":"الأعضاء","Usable together":"قابلة للاستخدام معاً","complete":"مكتملة","incomplete":"غير مكتملة",
+"Search id, plan, database, note…":"ابحث بالمعرّف، الخطة، القاعدة، الملاحظة…","Search every column…":"ابحث في كل الأعمدة…","Filter tables…":"تصفية الجداول…","Filter…":"تصفية…","Add a note…":"أضف ملاحظة…","Add filter":"إضافة فلتر","Export CSV":"تصدير CSV","Close sandbox":"إغلاق البيئة التجريبية","Rows inside the backup":"الصفوف داخل النسخة","Start restore":"بدء الاسترجاع","Restore as a new table":"استرجاع كجدول جديد"};
+let lang = "en"; try { lang = localStorage.getItem("bmLang") || "en"; } catch {}
+function setLang(l) { lang = l; try { localStorage.setItem("bmLang", l); } catch {} document.documentElement.lang = l; document.documentElement.dir = l === "ar" ? "rtl" : "ltr"; }
+function translate(root) {
+  if (lang !== "ar" || !root) return;
+  if (root.nodeType === 3) { const t = root.nodeValue.trim(); if (t && AR[t]) root.nodeValue = root.nodeValue.replace(t, AR[t]); return; }
+  if (root.nodeType !== 1 || root.tagName === "SCRIPT" || root.tagName === "PRE" || root.classList.contains("mono")) return;
+  if (root.placeholder && AR[root.placeholder]) root.placeholder = AR[root.placeholder];
+  for (const n of root.childNodes) translate(n);
+}
+new MutationObserver(list => { for (const m of list) for (const n of m.addedNodes) translate(n); }).observe(document.documentElement, { childList: true, subtree: true });
+setLang(lang);
+
+// ---------- state & routing ----------
+const state = { user: null, setupNeeded: false, version: "", held: false, progress: {}, lists: {} };
+const pages = {};
+const NAV = [["dashboard","Dashboard"],["backups","Backups"],["plans","Plans"],["sets","Sets"],["targets","Databases"],["destinations","Destinations"],["jobs","Jobs"],["settings","Settings"],["access","Users & access"],["audit","Activity"]];
+const OWNER_ONLY = ["settings", "audit"];
+const route = () => (location.hash.replace(/^#\/?/, "").split("?")[0]) || "dashboard";
+
+async function boot() {
+  const s = await api("GET", "/state"); Object.assign(state, s);
+  render();
+  if (state.user) connect();
+}
+function render() {
+  const root = $("#root");
+  if (!state.user) { root.innerHTML = authView(); bindAuth(); return; }
+  const r = pages[route()] ? route() : "dashboard";
+  root.innerHTML = html`<div class="app"><aside>
+    <div class="logo"><i>⛁</i> Backup Manager</div>
+    <nav>${NAV.filter(([k]) => state.user.role === "owner" || !OWNER_ONLY.includes(k)).map(([k, t]) => html`<a href="#/${k}" class="${k === r ? "on" : ""}">${t}${k === "jobs" ? raw('<b id="jobBadge" hidden></b>') : ""}</a>`)}</nav>
+    <div class="foot">${state.user.email} <span class="pill">${state.user.role}</span><br><a href="#" id="logout">Sign out</a> · <a href="#" id="langSw">${lang === "ar" ? "English" : "العربية"}</a> · v${state.version}</div>
+  </aside><main id="main"></main></div>`.s;
+  $("#langSw").onclick = e => { e.preventDefault(); setLang(lang === "ar" ? "en" : "ar"); render(); };
+  $("#logout").onclick = run(async e => { e.preventDefault(); await api("POST", "/logout"); location.reload(); });
+  pages[r]($("#main"));
+  badge();
+}
+window.addEventListener("hashchange", () => state.user && render());
+
+// ---------- sign in / first run ----------
+function authView() {
+  const setup = state.setupNeeded, token = (location.hash.match(/setup=([a-f0-9]+)/) || [])[1] || "";
+  return html`<div class="auth"><form class="card" id="authForm">
+    <div class="logo" style="padding-left:0"><i>⛁</i> Backup Manager</div>
+    <h2 style="margin:0">${setup ? "Create the first account" : "Sign in"}</h2>
+    <p class="mute" style="margin-top:4px">${setup ? "This account owns the installation." : "Welcome back."}</p>
+    ${setup ? html`<div class="f"><label>Setup code</label><input name="token" value="${token}" required><small>Printed by the installer, or run <span class="mono">backup-manager setup-link</span> on the server.</small></div>` : ""}
+    <div class="f"><label>E-mail</label><input name="email" type="email" required autofocus></div>
+    <div class="f"><label>Password</label><input name="password" type="password" required minlength="${setup ? 10 : 1}">${setup ? raw("<small>At least 10 characters.</small>") : ""}</div>
+    ${setup ? "" : raw('<div class="f" id="codeWrap" hidden><label>Code from your authenticator app</label><input name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="6 digits, or a recovery code"></div>')}
+    <div class="acts"><button class="btn pri" style="flex:1">${setup ? "Create account" : "Sign in"}</button></div>
+  </form></div>`.s;
+}
+function bindAuth() {
+  $("#authForm").onsubmit = run(async e => {
+    e.preventDefault();
+    try { await api("POST", state.setupNeeded ? "/setup" : "/login", Object.fromEntries(new FormData(e.target))); }
+    catch (err) { const cw = $("#codeWrap"); if (cw && /code/.test(err.message)) { cw.hidden = false; e.target.code.focus(); } throw err; }
+    history.replaceState(null, "", location.pathname); await boot();
+  });
+}
+
+// ---------- live events (one push connection, no polling) ----------
+let es, refreshTimer;
+function connect() {
+  if (es) es.close();
+  es = new EventSource("/api/events");
+  es.onmessage = m => {
+    const { event, data } = JSON.parse(m.data);
+    if (event === "progress") { state.progress[data.id] = data.progress; if (data.backupId) state.progress["b:" + data.backupId] = data.progress; paintProgress(); return; }
+    if (event === "hold") state.held = data;
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(() => { if (!$(".ov") && state.reload) state.reload(); badge(); }, 400);
+  };
+}
+function progressView(p) {
+  if (!p || !p.phase) return "";
+  const pct = p.estBytes > 0 ? Math.min(99, Math.round(p.rawBytes / p.estBytes * 100)) : (p.tablesTotal ? Math.round(p.tablesDone / p.tablesTotal * 100) : 0);
+  return html`<div class="small mute">${p.phase}${p.table ? " · " + p.table : ""} · ${p.tablesDone}/${p.tablesTotal} tables · ${num(p.rows)} rows · ${bytes(p.rawBytes)}${p.speed ? " · " + bytes(p.speed) + "/s" : ""}</div><div class="prog"><i style="width:${pct}%"></i></div>`.s;
+}
+function paintProgress() { document.querySelectorAll("[data-prog]").forEach(el => { const p = state.progress[el.dataset.prog]; if (p) el.innerHTML = progressView(p); }); }
+const badge = run(async () => { const d = await api("GET", "/dashboard"); const b = $("#jobBadge"); if (!b) return; const n = d.running + d.queued; b.hidden = !n; b.textContent = n; });
+
+// ---------- generic bits ----------
+function modal(inner, cls = "modal") {
+  const ov = document.createElement("div"); ov.className = "ov";
+  ov.innerHTML = `<div class="card ${cls}">${inner}</div>`;
+  ov.onmousedown = e => { if (e.target === ov) close(); };
+  const onKey = e => { if (e.key === "Escape") close(); };
+  function close() { ov.remove(); document.removeEventListener("keydown", onKey); }
+  document.addEventListener("keydown", onKey);
+  document.body.append(ov);
+  ov.querySelectorAll("[data-close]").forEach(b => b.onclick = close);
+  return { el: ov, close };
+}
+function confirmBox(title, text, word) {
+  return new Promise(res => {
+    const m = modal(html`<h2>${title}</h2><p class="mute">${text}</p>
+      ${word ? html`<div class="f"><label>Type <span class="mono">${word}</span> to confirm</label><input id="cw" autocomplete="off"></div>` : ""}
+      <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn pri" id="cy">Confirm</button></div>`.s);
+    $("#cy", m.el).onclick = () => { if (word && $("#cw", m.el).value !== word) return toast("The text does not match.", true); m.close(); res(true); };
+  });
+}
+const head = (title, sub, actions = "") => html`<div class="head"><div><h1>${title}</h1><p>${sub}</p></div><span class="sp"></span>${raw(String(actions))}</div>`.s;
+function pager(total, page, size, onPage) {
+  const pages = Math.max(1, Math.ceil(total / size));
+  const el = document.createElement("div"); el.className = "pager";
+  el.innerHTML = html`<span>${num(total)} total</span><span class="sp"></span><button class="btn sm" ${page <= 1 ? raw("disabled") : ""} data-p="${page - 1}">‹ Previous</button><span>Page ${page} of ${pages}</span><button class="btn sm" ${page >= pages ? raw("disabled") : ""} data-p="${page + 1}">Next ›</button>`.s;
+  el.querySelectorAll("button").forEach(b => b.onclick = () => onPage(+b.dataset.p));
+  return el;
+}
+
+// ---------- dashboard ----------
+pages.dashboard = async main => {
+  state.reload = () => pages.dashboard(main);
+  const [d, jobs, last] = await Promise.all([api("GET", "/dashboard"), api("GET", "/jobs?pageSize=6"), api("GET", "/backups?pageSize=6")]);
+  state.held = d.held;
+  main.innerHTML = head("Dashboard", "Everything at a glance.", html`<button class="btn" id="holdBtn">${d.held ? "Resume jobs" : "Pause new jobs"}</button>`) +
+    (d.held ? `<div class="banner">New jobs are paused (deploy hold). Running jobs finish normally.</div>` : "") +
+    (d.targets === 0 ? `<div class="banner">Start here: add a <a href="#/targets">database</a>, a <a href="#/destinations">destination</a>, then a <a href="#/plans">plan</a>.</div>` : "") +
+    html`<div class="tiles">
+      <div class="card tile"><small>Good backups</small><div>${num(d.backups)}</div><em>${bytes(d.storedBytes)} stored</em></div>
+      <div class="card tile"><small>Last good backup</small><div>${ago(d.lastBackupAt)}</div><em>${when(d.lastBackupAt)}</em></div>
+      <div class="card tile"><small>Next scheduled run</small><div>${d.nextRunAt ? ago(d.nextRunAt) : "—"}</div><em>${d.plans} active plans</em></div>
+      <div class="card tile"><small>Failed, last 7 days</small><div style="color:${d.failed7d ? "var(--bad)" : "inherit"}">${d.failed7d}</div><em>${d.running} running · ${d.queued} waiting</em></div>
+    </div>
+    <div class="card" style="margin-bottom:20px"><div class="bar"><b>Recent jobs</b></div><div class="tw"><table><tbody>${jobs.items.length ? jobs.items.map(jobRow) : raw('<tr><td class="empty">No jobs yet.</td></tr>')}</tbody></table></div></div>
+    <div class="card"><div class="bar"><b>Latest backups</b><span style="flex:1"></span><a href="#/backups">All backups →</a></div><div class="tw"><table><tbody>${last.items.length ? last.items.map(b => html`<tr class="click" data-b="${b.id}"><td><b>${b.planName}</b><div class="small mute">${b.targetName} · ${b.scope}</div></td><td>${pill(b.status)}</td><td>${bytes(b.storedBytes)}</td><td class="mute">${ago(b.createdAt)}</td></tr>`) : raw('<tr><td class="empty">No backups yet.</td></tr>')}</tbody></table></div></div>`.s;
+  $("#holdBtn").onclick = run(async () => { await api("POST", "/hold", { on: !d.held }); pages.dashboard(main); });
+  main.querySelectorAll("[data-b]").forEach(tr => tr.onclick = () => openBackup(tr.dataset.b));
+  bindJobRows(main);
+};
+const jobRow = j => html`<tr><td><b>${j.title}</b><div class="small mute">#${j.id} · attempt ${j.attempt}/${j.maxAttempts} · ${when(j.createdAt)}</div>${j.error && j.state !== "cancelled" ? html`<div class="small" style="color:${j.state === "queued" ? "var(--warn)" : "var(--bad)"}">${j.error}</div>` : ""}</td>
+  <td>${pill(j.state)}</td><td style="min-width:260px"><div data-prog="${j.id}">${j.state === "running" ? raw(progressView(state.progress[j.id] || j.progress)) : html`<span class="mute small">${j.state === "queued" && j.runAfter > Date.now()/1000 ? "retry " + ago(j.runAfter) : dur(j.startedAt, j.finishedAt)}</span>`}</div></td>
+  <td style="text-align:right">${j.state === "running" || j.state === "queued" ? html`<button class="btn sm red" data-cancel="${j.id}">Cancel</button>` : ""}</td></tr>`;
+function bindJobRows(el) { el.querySelectorAll("[data-cancel]").forEach(b => b.onclick = run(async () => { await api("POST", `/jobs/${b.dataset.cancel}/cancel`); toast("Cancelling…"); })); }
+
+// ---------- backups ----------
+pages.backups = async main => {
+  const f = state.lists.backups ||= { page: 1, pageSize: 15, search: "", status: "", plan: "", target: "", from: "", to: "", sort: "created", dir: "desc" };
+  const [plans, targets] = await Promise.all([api("GET", "/plans"), api("GET", "/targets")]);
+  main.innerHTML = head("Backups", "Every backup, newest first. Click a row to look inside.") + html`<div class="card">
+    <div class="bar">
+      <input type="search" id="q" placeholder="Search id, plan, database, note…" value="${f.search}">
+      <select id="fs"><option value="">Any status</option>${["done","running","queued","failed","cancelled"].map(s => html`<option ${f.status === s ? raw("selected") : ""}>${s}</option>`)}</select>
+      <select id="fp"><option value="">Any plan</option>${plans.map(p => html`<option value="${p.id}" ${f.plan == p.id ? raw("selected") : ""}>${p.name}</option>`)}</select>
+      <select id="ft"><option value="">Any database</option>${targets.map(t => html`<option value="${t.id}" ${f.target == t.id ? raw("selected") : ""}>${t.name}</option>`)}</select>
+      <input type="date" id="fa" value="${f.from}" title="From"><input type="date" id="fb" value="${f.to}" title="To">
+    </div><div class="tw" id="list"></div><div id="pg"></div></div>`.s;
+  const load = state.reload = run(async () => {
+    const q = new URLSearchParams({ page: f.page, pageSize: f.pageSize, search: f.search, status: f.status, plan: f.plan, target: f.target, sort: f.sort, dir: f.dir });
+    if (f.from) q.set("from", Math.floor(new Date(f.from + "T00:00:00") / 1000));
+    if (f.to) q.set("to", Math.floor(new Date(f.to + "T23:59:59") / 1000));
+    const d = await api("GET", "/backups?" + q);
+    const th = (k, t) => html`<th class="s" data-sort="${k}">${t}${f.sort === k ? (f.dir === "asc" ? " ↑" : " ↓") : ""}</th>`;
+    $("#list").innerHTML = d.items.length ? html`<table><thead><tr>${th("created","Backup")}<th>Contents</th>${th("status","Status")}${th("size","Size")}${th("rows","Rows")}${th("duration","Took")}<th></th></tr></thead><tbody>
+      ${d.items.map(b => html`<tr class="click" data-b="${b.id}">
+        <td><b>${b.planName}</b> ${b.pinned ? raw('<span title="Pinned">📌</span>') : ""}<div class="small mute">${when(b.createdAt)} · ${b.trigger}</div><div class="mono mute">${b.id}</div></td>
+        <td>${b.targetName}<div class="small mute">${b.scope} · ${kindText(b)}</div></td>
+        <td>${pill(b.status)} ${b.verifiedAt ? (b.verifyError ? raw('<span class="pill failed">verify failed</span>') : raw('<span class="pill done">verified</span>')) : ""}${b.testedAt ? (b.testError ? raw('<span class="pill failed">restore test failed</span>') : raw('<span class="pill done">restore tested</span>')) : ""}${b.encrypted ? raw(' <span title="Encrypted">🔒</span>') : ""}
+          ${b.status === "running" ? html`<div data-prog="b:${b.id}">${raw(progressView(state.progress["b:" + b.id]))}</div>` : ""}${b.error ? html`<div class="small" style="color:var(--bad);max-width:320px">${b.error}</div>` : ""}</td>
+        <td>${bytes(b.storedBytes)}<div class="small mute">${b.rawBytes ? "from " + bytes(b.rawBytes) : ""}</div></td>
+        <td>${num(b.rows)}<div class="small mute">${b.tables} tables</div></td><td>${dur(b.startedAt, b.finishedAt)}</td>
+        <td style="text-align:right">${b.status === "done" && b.method === "logical" ? html`<a class="btn sm" href="/api/backups/${b.id}/download" data-stop>Download</a>` : ""}</td></tr>`)}</tbody></table>`.s
+      : `<div class="empty"><b>No backups match</b>Run a plan to create the first one.</div>`;
+    $("#list").querySelectorAll("[data-b]").forEach(tr => tr.onclick = e => { if (!e.target.closest("[data-stop]")) openBackup(tr.dataset.b); });
+    $("#list").querySelectorAll("[data-sort]").forEach(h => h.onclick = () => { const k = h.dataset.sort; f.dir = f.sort === k && f.dir === "desc" ? "asc" : "desc"; f.sort = k; load(); });
+    $("#pg").replaceChildren(pager(d.total, f.page, f.pageSize, p => { f.page = p; load(); }));
+  });
+  let t; $("#q").oninput = e => { clearTimeout(t); t = setTimeout(() => { f.search = e.target.value; f.page = 1; load(); }, 300); };
+  for (const [id, k] of [["fs","status"],["fp","plan"],["ft","target"],["fa","from"],["fb","to"]]) $("#" + id).onchange = e => { f[k] = e.target.value; f.page = 1; load(); };
+  load();
+};
+
+async function openBackup(id) {
+  const { backup: b, manifest: m } = await api("GET", "/backups/" + id);
+  const objs = (m && m.objects) || [];
+  const tables = {};
+  for (const o of objs) if (o.table) { const k = o.db + "." + o.table; (tables[k] ||= { db: o.db, table: o.table, rows: 0, raw: 0, stored: 0, engine: o.engine })[o.kind] = o; tables[k].rows += o.rows || 0; tables[k].raw += o.rawBytes; tables[k].stored += o.storedBytes; }
+  const all = Object.values(tables), plain = objs.filter(o => ["files","rdb","pgdump","pgglobals"].includes(o.kind)), extras = objs.filter(o => !o.table && !["files","rdb","pgdump","pgglobals","index","physical"].includes(o.kind));
+  const ok = b.status === "done" && !b.deletedAt, phys = b.method === "physical" || b.method === "incremental";
+  const d = modal(html`<div class="head"><div><h2>${b.planName}</h2><div class="mono mute">${b.id}</div></div><span class="sp"></span>${pill(b.status)}<button class="btn sm" data-close>Close</button></div>
+    ${b.error ? html`<div class="banner bad">${b.error}</div>` : ""}${b.verifyError ? html`<div class="banner bad">Verification failed: ${b.verifyError}</div>` : ""}
+    ${b.deletedAt ? html`<div class="banner">Files removed ${when(b.deletedAt)} — ${b.deleteReason}</div>` : ""}
+    <dl class="kv"><dt>Database server</dt><dd>${b.targetName}${m ? " · " + m.serverVersion : ""}</dd><dt>Contents</dt><dd>${b.scope} · ${kindText(b)}</dd>
+      <dt>Taken</dt><dd>${when(b.startedAt)} · took ${dur(b.startedAt, b.finishedAt)} · ${b.trigger}</dd><dt>Size</dt><dd>${bytes(b.storedBytes)} stored (${bytes(b.rawBytes)} of SQL) · ${num(b.rows)} rows · ${b.tables} tables</dd>
+      <dt>Stored in</dt><dd>${b.destinationName} · zstd${b.encrypted ? " · AES-256 encrypted" : " · not encrypted"}</dd>
+      <dt>Verified</dt><dd>${b.verifiedAt ? when(b.verifiedAt) + (b.verifyError ? " — failed" : " — every file read back correctly") : "not yet"}</dd>
+      <dt>Restore test</dt><dd>${b.testedAt ? when(b.testedAt) + (b.testError ? " — FAILED: " + b.testError : " — passed in " + b.testSeconds + "s: " + b.testDetail) : "not yet"}</dd>
+      ${m && Object.keys(m.position || {}).length ? html`<dt>Binary log position</dt><dd class="mono">${Object.entries(m.position).map(([k, v]) => k + " = " + v).join("  ·  ")}</dd>` : ""}
+      ${b.parentId ? html`<dt>Builds on</dt><dd class="mono">${b.parentId}</dd>` : ""}
+      <dt>Note</dt><dd><input id="note" value="${b.note}" placeholder="Add a note…" style="width:100%"></dd></dl>
+    <div class="acts" style="justify-content:flex-start;margin:0 0 18px">${ok && phys ? html`<button class="btn pri" id="rs">Restore…</button><a class="btn" href="/api/backups/${b.id}/download?raw=${encodeURIComponent(objs[0].key)}">Download raw file</a><button class="btn" id="vf">Verify now</button>` : ok && b.method === "logical" ? html`<a class="btn pri" href="/api/backups/${b.id}/download">Download all (.sql)</a><button class="btn" id="vf">Verify now</button>` : ok ? raw('<button class="btn" id="vf">Verify now</button>') : ""}
+${ok && ["logical","physical","incremental"].includes(b.method) ? raw('<button class="btn" id="rt">Test restore</button>') : ""}${ok && phys ? raw('<button class="btn" id="sbx">Browse rows…</button>') : ""}
+      <button class="btn" id="pin">${b.pinned ? "Unpin" : "Pin (never auto-delete)"}</button>${!b.deletedAt ? raw('<button class="btn red" id="del">Delete</button>') : ""}</div>
+    ${m && m.warnings && m.warnings.length ? html`<div class="banner">${m.warnings.length} warning(s): ${m.warnings.slice(0, 5).join(" · ")}${m.warnings.length > 5 ? " …" : ""}</div>` : ""}
+    ${ok && plain.length ? html`<div class="card" style="margin-bottom:14px"><div class="bar"><b>Files in this backup</b></div><div class="tw"><table><tbody>${plain.map(o => html`<tr><td><b>${o.key.split("/").pop().replace(/\.zst(\.enc)?$/, "")}</b><div class="small mute">${o.kind === "files" ? num(o.rows) + " files, tar archive" : o.kind === "rdb" ? "Redis snapshot (dump.rdb)" : o.kind === "pgglobals" ? "roles and tablespaces" : o.db + " · pg_dump SQL"}</div></td><td>${bytes(o.rawBytes)}</td><td class="mute">${bytes(o.storedBytes)} stored</td><td style="text-align:right"><a class="btn sm pri" href="/api/backups/${b.id}/download?obj=${encodeURIComponent(o.key)}">Download</a></td></tr>`)}</tbody></table></div></div>` : ""}
+    ${ok && b.method === "files" ? html`<div class="card"><div class="bar"><b>File list</b><input type="search" id="flq" placeholder="Search paths…"></div><div class="tw" id="fll"></div><div id="flp"></div></div>` : ""}
+    ${all.length ? html`<div class="card"><div class="bar"><b>${all.length} tables</b><input type="search" id="tq" placeholder="Filter tables…"></div><div class="tw" id="tl"></div><div id="tp"></div></div>` : ""}
+    ${extras.length ? html`<p class="mute small" style="margin-top:14px">Also saved: ${extras.map(o => o.db + " " + o.kind + " (" + (o.rows || 0) + ")").join(", ")}</p>` : ""}`.s, "drawer");
+  const el = d.el;
+  $("#note", el).onchange = run(async e => { await api("POST", `/backups/${id}/note`, { note: e.target.value }); toast("Note saved"); });
+  $("#pin", el).onclick = run(async () => { await api("POST", `/backups/${id}/pin`, { pinned: !b.pinned }); d.close(); state.reload && state.reload(); });
+  if ($("#vf", el)) $("#vf", el).onclick = run(async () => { await api("POST", `/backups/${id}/verify`, {}); toast("Verification queued — see Jobs"); });
+  if ($("#del", el)) $("#del", el).onclick = run(async () => { if (!await confirmBox("Delete this backup?", "The stored files are removed for good. This cannot be undone.", "delete")) return; await api("DELETE", "/backups/" + id); d.close(); toast("Backup deleted"); state.reload && state.reload(); });
+  if ($("#fll", el)) { const ff = { page: 1, search: "" };
+    const fl = run(async () => { const d2 = await api("GET", `/backups/${id}/files?page=${ff.page}&pageSize=15&search=${encodeURIComponent(ff.search)}`);
+      $("#fll", el).innerHTML = html`<table><tbody>${d2.items.map(x => html`<tr><td class="mono">${x.p}</td><td class="mono mute">${x.m}</td><td>${x.m[0] === "d" ? "" : bytes(x.s)}</td><td class="mute">${when(x.t)}</td></tr>`)}</tbody></table>`.s;
+      $("#flp", el).replaceChildren(pager(d2.total, ff.page, 15, p => { ff.page = p; fl(); })); });
+    let ft; $("#flq", el).oninput = e => { clearTimeout(ft); ft = setTimeout(() => { ff.search = e.target.value; ff.page = 1; fl(); }, 350); }; fl(); }
+  if ($("#rt", el)) $("#rt", el).onclick = run(async () => { await api("POST", `/backups/${id}/test`, {}); toast("Restore test queued — see Jobs"); });
+  if ($("#sbx", el)) $("#sbx", el).onclick = () => openRows(b, "", "");
+  if ($("#rs", el)) $("#rs", el).onclick = () => {
+    const m = modal(html`<form id="rf"><h2>Restore into a new folder</h2><p class="mute">Builds a ready-to-start data folder from this backup${b.method === "incremental" ? " and everything it builds on" : ""}. It never touches a running database: the folder must be new or empty.</p>
+      <div class="f"><label>Folder</label><input name="dir" required placeholder="/var/lib/mysql-restore" class="mono"><small>Path where the backup tools run (inside the container for a Docker database). Needs free space for the whole database.</small></div>
+      <div class="f"><label>Roll forward to a moment (optional)</label><input name="at" type="datetime-local" step="1"><small>Your local time. Needs a binary-log plan for this database. Empty = the moment of the backup, ${when(b.finishedAt)}.</small></div>
+      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Start restore</button></div></form>`.s);
+    $("#rf", m.el).onsubmit = run(async e => { e.preventDefault(); const f = e.target;
+      await api("POST", `/backups/${id}/restore`, { dir: f.dir.value.trim(), stopAt: f.at.value ? Math.floor(new Date(f.at.value) / 1000) : 0 });
+      m.close(); d.close(); toast("Restore queued"); location.hash = "#/jobs"; });
+  };
+  if (!all.length) return;
+  let page = 1, q = ""; const size = 12;
+  const paint = () => {
+    const rows = all.filter(t => (t.db + "." + t.table).toLowerCase().includes(q));
+    const dl = (t, part, label) => html`<a class="btn sm" href="/api/backups/${b.id}/download?db=${encodeURIComponent(t.db)}&table=${encodeURIComponent(t.table)}${part ? "&part=" + part : ""}">${label}</a>`;
+    $("#tl", el).innerHTML = html`<table><thead><tr><th>Table</th><th>Rows</th><th>SQL size</th><th>Stored</th><th></th></tr></thead><tbody>${rows.slice((page - 1) * size, page * size).map((t, i) => html`<tr>
+      <td><b>${t.table}</b><div class="small mute">${t.db}${t.engine ? " · " + t.engine : ""}</div></td><td>${t.data ? num(t.rows) : "—"}</td><td>${bytes(t.raw)}</td><td>${bytes(t.stored)}</td>
+      <td style="text-align:right;white-space:nowrap">${ok && t.schema && t.data ? html`<button class="btn sm pri" data-rows="${t.db + "." + t.table}">Browse rows</button> <button class="btn sm" data-rest="${t.db + "." + t.table}">Restore…</button> ` : ""}${t.schema ? html`<button class="btn sm" data-ddl="${t.db + "." + t.table}">Structure</button> ` : ""}${ok ? html`${t.schema && t.data ? dl(t, "", "Download") : ""} ${t.schema ? dl(t, "schema", "Schema") : ""} ${t.data ? dl(t, "data", "Rows") : ""}` : ""}</td></tr>`)}</tbody></table>`.s;
+    $("#tl", el).querySelectorAll("[data-ddl]").forEach(bn => bn.onclick = () => modal(html`<h2>${bn.dataset.ddl}</h2><pre>${tables[bn.dataset.ddl].schema.ddl}</pre><div class="acts"><button class="btn" data-close>Close</button></div>`.s));
+    $("#tl", el).querySelectorAll("[data-rows]").forEach(bn => bn.onclick = () => { const t = tables[bn.dataset.rows]; openRows(b, t.db, t.table); });
+    $("#tl", el).querySelectorAll("[data-rest]").forEach(bn => bn.onclick = () => { const t = tables[bn.dataset.rest]; restoreTable(b, t.db, t.table); });
+    $("#tp", el).replaceChildren(pager(rows.length, page, size, p => { page = p; paint(); }));
+  };
+  $("#tq", el).oninput = e => { q = e.target.value.toLowerCase(); page = 1; paint(); };
+  paint();
+}
+
+// ---------- rows inside a backup (sandbox) ----------
+function waitJob(jobId) {
+  return new Promise((res, rej) => { const prev = es.onmessage;
+    const h = m => { prev(m); const { event, data } = JSON.parse(m.data);
+      if (event === "job" && data.id === jobId && ["done","failed","cancelled"].includes(data.state)) { es.onmessage = prev; data.state === "done" ? res() : rej(new Error(data.error || "the job was " + data.state)); } };
+    es.onmessage = h; });
+}
+async function openRows(b, db, table) {
+  const m = modal(html`<div class="head"><div><h2 id="rxT">Rows inside the backup</h2><div class="small mute">Read-only copy in a throwaway sandbox. Nothing here touches your real database.</div></div><span class="sp"></span><button class="btn sm" id="rxClose">Close sandbox</button><button class="btn sm" data-close>Close</button></div><div id="rx"></div>`.s, "drawer");
+  const box = $("#rx", m.el), f = { page: 1, pageSize: 25, sort: "", dir: "asc", search: "", filters: [] };
+  $("#rxClose", m.el).onclick = run(async () => { await api("DELETE", `/backups/${b.id}/explore`); m.close(); toast("Sandbox removed"); });
+  const ensure = async () => {
+    const r = await api("POST", `/backups/${b.id}/explore`, { db, table });
+    if (r.ready) return;
+    box.innerHTML = html`<div class="empty"><b>${table ? "Loading " + db + "." + table + " into the sandbox…" : "Rebuilding this backup in the sandbox…"}</b>Big tables take a while. You can close this window; the job keeps running (see Jobs).<div data-prog="${r.jobId}" style="max-width:420px;margin:14px auto 0"></div></div>`.s;
+    await waitJob(r.jobId);
+  };
+  const pickTable = async () => {
+    const st = await api("GET", `/backups/${b.id}/explore`);
+    if (!st.tables.length) throw new Error("The sandbox holds no tables.");
+    box.innerHTML = html`<div class="card"><div class="bar"><b>Choose a table</b><input type="search" id="ptq" placeholder="Filter…"></div><div class="tw" id="ptl"></div></div>`.s;
+    const paint = q => { const list = st.tables.filter(t => (t.db + "." + t.name).toLowerCase().includes(q)).slice(0, 200);
+      $("#ptl", box).innerHTML = html`<table><tbody>${list.map((t, i) => html`<tr class="click" data-t="${i}"><td><b>${t.name}</b><div class="small mute">${t.db}</div></td><td class="mute">~${num(t.rows)} rows · ${bytes(t.bytes)}</td></tr>`)}</tbody></table>`.s;
+      $("#ptl", box).querySelectorAll("[data-t]").forEach(tr => tr.onclick = () => { const t = list[+tr.dataset.t]; db = t.db; table = t.name; grid(); }); };
+    $("#ptq", box).oninput = e => paint(e.target.value.toLowerCase()); paint("");
+  };
+  const OPS = [["contains","contains"],["eq","="],["ne","≠"],["gt",">"],["ge","≥"],["lt","<"],["le","≤"],["starts","starts with"],["null","is empty (NULL)"],["notnull","is not NULL"]];
+  const grid = run(async () => {
+    $("#rxT", m.el).textContent = db + "." + table;
+    const qs = () => new URLSearchParams({ db, table, page: f.page, pageSize: f.pageSize, sort: f.sort, dir: f.dir, search: f.search, filters: JSON.stringify(f.filters) });
+    const d = await api("GET", `/backups/${b.id}/rows?` + qs());
+    box.innerHTML = html`<div class="card"><div class="bar">
+        <input type="search" id="rq" placeholder="Search every column…" value="${f.search}">
+        <select id="fc"><option value="">Filter by column…</option>${d.columns.map(c => html`<option>${c.name}</option>`)}</select>
+        <select id="fo">${OPS.map(([v, t]) => html`<option value="${v}">${t}</option>`)}</select><input id="fv" placeholder="value" style="width:150px"><button class="btn sm" id="fa2">Add filter</button>
+        <a class="btn sm" id="csv" href="/api/backups/${b.id}/rows?${qs()}&format=csv">Export CSV</a></div>
+      ${f.filters.length ? html`<div class="bar">${f.filters.map((x, i) => html`<span class="pill">${x.column} ${(OPS.find(o => o[0] === x.op) || [])[1]} ${x.value} <a href="#" data-rm="${i}">✕</a></span>`)}</div>` : ""}
+      <div class="tw" style="max-height:62vh;overflow:auto"><table><thead><tr>${d.columns.map(c => html`<th class="s" data-sort="${c.name}" title="${c.type}">${c.key ? "🔑 " : ""}${c.name}${f.sort === c.name ? (f.dir === "asc" ? " ↑" : " ↓") : ""}</th>`)}</tr></thead>
+      <tbody>${d.rows.length ? d.rows.map(r => html`<tr>${r.map(v => v === null ? raw('<td class="mute">NULL</td>') : html`<td class="mono" style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${String(v).slice(0, 600)}">${v}</td>`)}</tr>`) : html`<tr><td class="empty" colspan="${d.columns.length}">No rows match.</td></tr>`}</tbody></table></div><div id="rp"></div></div>`.s;
+    $("#rp", box).replaceChildren(pager(d.total, f.page, f.pageSize, p => { f.page = p; grid(); }));
+    let t; $("#rq", box).oninput = e => { clearTimeout(t); t = setTimeout(() => { f.search = e.target.value; f.page = 1; grid(); }, 450); };
+    $("#fa2", box).onclick = () => { const c = $("#fc", box).value; if (!c) return toast("Choose a column.", true); f.filters.push({ column: c, op: $("#fo", box).value, value: $("#fv", box).value }); f.page = 1; grid(); };
+    box.querySelectorAll("[data-rm]").forEach(a => a.onclick = e => { e.preventDefault(); f.filters.splice(+a.dataset.rm, 1); f.page = 1; grid(); });
+    box.querySelectorAll("[data-sort]").forEach(h => h.onclick = () => { const k = h.dataset.sort; f.dir = f.sort === k && f.dir === "asc" ? "desc" : "asc"; f.sort = k; grid(); });
+  });
+  try { await ensure(); table ? grid() : await pickTable(); }
+  catch (e) { box.innerHTML = html`<div class="banner bad">${e.message}</div>`.s; }
+}
+async function restoreTable(b, db, table) {
+  const targets = await api("GET", "/targets");
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "").replace(/^(\d{8})/, "$1_");
+  const m = modal(html`<form id="tr"><h2>Restore ${db}.${table}</h2><p class="mute">Copies this table from the backup into a database under a <b>new name</b>. The existing table is not touched; nothing is dropped or replaced. You compare, then swap the tables yourself.</p>
+    <div class="f"><label>Into database server</label><select name="targetId">${targets.map(t => html`<option value="${t.id}" ${t.id === b.targetId ? raw("selected") : ""}>${t.name}</option>`)}</select><small>Use the primary: a replica refuses writes.</small></div>
+    <div class="row"><div class="f"><label>Database</label><input name="toDb" value="${db}" required></div><div class="f"><label>New table name</label><input name="toTable" value="${(table + "__restored_" + stamp).slice(0, 64)}" required></div></div>
+    <div class="row"><div class="f"><label>User allowed to create tables</label><input name="user" required autocomplete="off"></div><div class="f"><label>Password</label><input name="password" type="password" autocomplete="off"><small>Used once for this restore, not saved.</small></div></div>
+    <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Restore as a new table</button></div></form>`.s);
+  $("#tr", m.el).onsubmit = run(async e => { e.preventDefault(); const f = e.target;
+    await api("POST", `/backups/${b.id}/restore-table`, { db, table, targetId: +f.targetId.value, toDb: f.toDb.value.trim(), toTable: f.toTable.value.trim(), user: f.user.value.trim(), password: f.password.value });
+    m.close(); toast("Table restore queued — see Jobs"); });
+}
+
+// ---------- plans ----------
+const scheduleText = s => !s ? "manual only" : s.startsWith("@every ") ? "every " + s.slice(7) : s;
+pages.plans = async main => {
+  state.reload = () => pages.plans(main);
+  const [plans, targets, dests] = await Promise.all([api("GET", "/plans"), api("GET", "/targets"), api("GET", "/destinations")]);
+  const name = (l, id) => (l.find(x => x.id === id) || { name: "(deleted)" }).name;
+  main.innerHTML = head("Plans", "What to back up, how often, where to, and how long to keep it.", `<button class="btn pri" id="add">New plan</button>`) + html`<div class="card"><div class="tw">${plans.length ? html`<table><thead><tr><th>Plan</th><th>What</th><th>Schedule</th><th>Keep</th><th></th></tr></thead><tbody>${plans.map(p => html`<tr>
+    <td><b>${p.name}</b> ${p.enabled ? "" : raw('<span class="pill cancelled">off</span>')}<div class="small mute">${name(targets, p.targetId)} → ${name(dests, p.destinationId)}</div></td>
+    <td>${p.spec.method === "files" ? "folders" : p.spec.method === "redis" ? "Redis snapshot" : p.spec.method === "physical" ? "whole server, data files" + (p.spec.incrementalsPerFull ? " · " + p.spec.incrementalsPerFull + " incrementals per full" : "") : p.spec.method === "binlog" ? "binary logs" : p.spec.tables?.length ? p.spec.tables.length + " table rule(s)" : p.spec.databases?.length ? p.spec.databases.join(", ") : "whole server"}<div class="small mute">${p.spec.content === "all" ? "schema + rows" : p.spec.content === "data" ? "rows only" : "schema only"}${p.spec.noEncrypt ? "" : " · encrypted"}</div></td>
+    <td>${scheduleText(p.schedule)}<div class="small mute">${p.nextRunAt && p.enabled ? "next " + ago(p.nextRunAt) : ""}${p.lastRunAt ? " · last " + ago(p.lastRunAt) : ""}</div></td>
+    <td>${p.keepDays ? p.keepDays + " days" : ""}${p.keepDays && p.keepLast ? " and " : ""}${p.keepLast ? "last " + p.keepLast : ""}${!p.keepDays && !p.keepLast ? "forever" : ""}</td>
+    <td style="text-align:right;white-space:nowrap"><button class="btn sm pri" data-run="${p.id}">Run now</button> <button class="btn sm" data-edit="${p.id}">Edit</button> <button class="btn sm red" data-del="${p.id}">Delete</button></td></tr>`)}</tbody></table>` : raw('<div class="empty"><b>No plans yet</b>A plan connects a database to a destination with a schedule.</div>')}</div></div>`.s;
+  $("#add").onclick = () => { if (!targets.length || !dests.length) return toast("Add a database and a destination first.", true); planForm(null, targets, dests); };
+  main.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => planForm(plans.find(p => p.id == b.dataset.edit), targets, dests));
+  main.querySelectorAll("[data-run]").forEach(b => b.onclick = run(async () => { const r = await api("POST", `/plans/${b.dataset.run}/run`, {}); toast(r.queued ? "Binary-log archive queued" : "Backup queued"); delete state.lists.backups; location.hash = r.queued ? "#/jobs" : "#/backups"; }));
+  main.querySelectorAll("[data-del]").forEach(b => b.onclick = run(async () => { if (!await confirmBox("Delete this plan?", "Its existing backups are kept.")) return; await api("DELETE", "/plans/" + b.dataset.del); pages.plans(main); }));
+};
+function planForm(p, targets, dests) {
+  const s = p ? p.spec : { content: "all" };
+  const scope = s.tables?.length ? "tables" : s.databases?.length ? "dbs" : "all";
+  const sch = p ? p.schedule : "@every 24h", every = sch.startsWith("@every ") ? parseInt(sch.slice(7)) : "";
+  const mode = !sch ? "manual" : every ? "every" : "cron";
+  const seg = (n, opts, cur) => html`<div class="seg">${opts.map(([v, t]) => html`<label><input type="radio" name="${n}" value="${v}" ${v === cur ? raw("checked") : ""}>${t}</label>`)}</div>`;
+  const m = modal(html`<form id="pf"><h2>${p ? "Edit plan" : "New plan"}</h2>
+    <div class="f"><label>Name</label><input name="name" required value="${p?.name || ""}" placeholder="e.g. Money tables, hourly"></div>
+    <div class="row"><div class="f"><label>Database server</label><select name="targetId">${targets.map(t => html`<option value="${t.id}" ${p?.targetId === t.id ? raw("selected") : ""}>${t.name}</option>`)}</select></div>
+      <div class="f"><label>Destination</label><select name="destinationId">${dests.map(t => html`<option value="${t.id}" ${p?.destinationId === t.id ? raw("selected") : ""}>${t.name}</option>`)}</select></div></div>
+    <div class="f"><label>Method</label>${seg("method", [["logical","Logical (SQL)"],["physical","Physical (hot copy)"],["binlog","Binary logs"]], s.method || "logical")}
+      <small id="mHint"></small></div>
+    <div class="f" id="incWrap"><label>Incrementals between two full backups</label><input name="inc" type="number" min="0" max="200" value="${s.incrementalsPerFull ?? 6}" style="width:110px"><small>0 = every run is a full backup. An incremental copies only what changed since the previous run.</small></div>
+    <div id="logicalOnly"><div class="f"><label>What to back up</label>${seg("scope", [["all","Whole server"],["dbs","Chosen databases"],["tables","Chosen tables"]], scope)}</div>
+    <div class="f" id="pickWrap" hidden><input type="search" id="pickQ" placeholder="Filter…"><div class="pick" id="pick"></div><small id="pickInfo"></small></div>
+    <div class="f"><label>Contents</label>${seg("content", [["all","Schema + rows"],["data","Rows only"],["schema","Schema only"]], s.content || "all")}</div></div>
+    <div class="f"><label>Schedule</label>${seg("mode", [["every","Every X hours"],["cron","Cron line"],["manual","Manual only"]], mode)}
+      <div id="mEvery"><input name="every" type="number" min="1" max="720" value="${every || 24}" style="width:110px"> hours</div>
+      <div id="mCron" hidden><input name="cron" class="mono" value="${mode === "cron" ? sch : "0 3 * * *"}" placeholder="0 3 * * *"><small>minute hour day month weekday. Prefix with CRON_TZ=Africa/Cairo to set the time zone (default: server time).</small></div></div>
+    <div class="row"><div class="f"><label>Delete backups older than (days)</label><input name="keepDays" type="number" min="0" value="${p?.keepDays ?? 14}"><small>0 = no age limit</small></div>
+      <div class="f"><label>Always keep the newest</label><input name="keepLast" type="number" min="0" value="${p?.keepLast ?? 3}"><small>0 = no count rule. The newest good backup is never deleted.</small></div></div>
+    <div class="row"><div class="f"><label>Run before the backup (optional)</label><input name="preHook" class="mono" value="${s.preHook || ""}" placeholder="shell command"><small>A failure stops the backup.</small></div>
+      <div class="f"><label>Run after the backup (optional)</label><input name="postHook" class="mono" value="${s.postHook || ""}" placeholder="shell command"><small>Always runs. Sees BM_STATUS = done or failed.</small></div></div>
+    <div class="f"><label>Test by restoring, every N good backups</label><input name="testEvery" type="number" min="0" max="1000" value="${s.testEvery || 0}" style="width:110px"><small>0 = never. The backup is restored into a throwaway sandbox and checked; a failure sends an alert. Needs Docker on this server.</small></div>
+    <div class="row"><div class="f"><label>Speed limit (MB per second)</label><input name="rateMB" type="number" min="0" value="${s.rateMB || 0}"><small>0 = no limit</small></div>
+      <div class="f"><label>Options</label><label style="font-weight:400"><input type="checkbox" name="encrypt" style="width:auto" ${s.noEncrypt ? "" : raw("checked")}> Encrypt (AES-256)</label><label style="font-weight:400"><input type="checkbox" name="enabled" style="width:auto" ${p && !p.enabled ? "" : raw("checked")}> Schedule is on</label></div></div>
+    <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Save plan</button></div></form>`.s);
+  const f = $("#pf", m.el), chosen = new Set(scope === "tables" ? s.tables : scope === "dbs" ? s.databases : []);
+  let tables = [], loadedFor = 0;
+  const paintPick = () => {
+    const sc = f.scope.value, q = $("#pickQ", f).value.toLowerCase();
+    $("#pickWrap", f).hidden = sc === "all"; if (sc === "all") return;
+    const dbs = [...new Set(tables.map(t => t.db))];
+    const item = (v, label, extra, cls = "") => html`<label class="${cls}"><input type="checkbox" value="${v}" ${chosen.has(v) ? raw("checked") : ""}>${label}<span>${extra}</span></label>`;
+    $("#pick", f).innerHTML = (sc === "dbs" ? dbs.filter(d => d.toLowerCase().includes(q)).map(d => item(d, d, tables.filter(t => t.db === d).length + " tables"))
+      : dbs.map(d => html`<div class="db">${d}</div>${tables.filter(t => t.db === d && t.type !== "VIEW" && (d + "." + t.name).toLowerCase().includes(q)).map(t => item(d + "." + t.name, t.name, "~" + num(t.rows) + " rows · " + bytes(t.bytes)))}`)).join("") || '<div class="empty">Nothing found.</div>';
+    $("#pick", f).querySelectorAll("input").forEach(c => c.onchange = () => { c.checked ? chosen.add(c.value) : chosen.delete(c.value); info(); });
+    info();
+  };
+  const info = () => $("#pickInfo", f).textContent = chosen.size + " selected";
+  const loadTables = run(async () => {
+    const id = +f.targetId.value; if (f.scope.value === "all") return paintPick();
+    if (loadedFor !== id) { $("#pickWrap", f).hidden = false; $("#pick", f).innerHTML = '<div class="empty">Reading the table list…</div>'; tables = await api("GET", `/targets/${id}/tables`); loadedFor = id; }
+    paintPick();
+  });
+  f.targetId.onchange = () => { chosen.clear(); paintMethod(); loadTables(); };
+  f.querySelectorAll("[name=scope]").forEach(r => r.onchange = () => { chosen.clear(); loadTables(); });
+  $("#pickQ", f).oninput = paintPick;
+  const HINTS = { logical: "SQL files, one per table. Any scope, easy to read and to load anywhere. Best for chosen tables and small databases.",
+    physical: "A hot copy of the data files of the whole server. Fastest to take and to restore; the right choice for big databases. The database needs its \"run the tools\" setting.",
+    binlog: "Archives the server's binary logs on every run. With a physical backup this allows restoring to any second. Schedule it every 5–15 minutes on the primary." };
+  const tkind = () => (targets.find(t => t.id === +f.targetId.value) || {}).kind || "mysql";
+  const paintMethod = () => { const k = tkind(), me = k === "mysql" ? f.method.value : k; f.querySelector("[name=method]").closest(".f").hidden = k !== "mysql";
+    if (k !== "mysql") { $("#logicalOnly", f).hidden = k !== "postgres"; $("#incWrap", f).hidden = true; if (k !== "postgres") $("#pickWrap", f).hidden = true; return; } $("#mHint", f).textContent = HINTS[me]; $("#logicalOnly", f).hidden = me !== "logical"; $("#incWrap", f).hidden = me !== "physical"; if (me !== "logical") $("#pickWrap", f).hidden = true; };
+  f.querySelectorAll("[name=method]").forEach(r => r.onchange = paintMethod); paintMethod();
+  const paintMode = () => { $("#mEvery", f).hidden = f.mode.value !== "every"; $("#mCron", f).hidden = f.mode.value !== "cron"; };
+  f.querySelectorAll("[name=mode]").forEach(r => r.onchange = paintMode); paintMode(); loadTables();
+  f.onsubmit = run(async e => {
+    e.preventDefault();
+    const me = tkind() === "mysql" ? f.method.value : tkind(), sc = me === "logical" || me === "postgres" ? f.scope.value : "all";
+    if (sc !== "all" && !chosen.size) throw new Error("Choose at least one " + (sc === "dbs" ? "database" : "table") + ".");
+    const spec = { ...s, content: f.content.value, databases: sc === "dbs" ? [...chosen] : [], tables: sc === "tables" ? [...chosen] : [], noEncrypt: !f.encrypt.checked, rateMB: +f.rateMB.value || 0, method: me, testEvery: me === "binlog" ? 0 : (+f.testEvery.value || 0), incrementalsPerFull: me === "physical" ? (+f.inc.value || 0) : 0 };
+    if (me !== "logical" && me !== "postgres") spec.content = "all";
+    spec.preHook = f.preHook.value.trim(); spec.postHook = f.postHook.value.trim();
+    const body = { name: f.name.value, targetId: +f.targetId.value, destinationId: +f.destinationId.value, spec, enabled: f.enabled.checked, keepDays: +f.keepDays.value || 0, keepLast: +f.keepLast.value || 0,
+      schedule: f.mode.value === "manual" ? "" : f.mode.value === "every" ? `@every ${+f.every.value || 24}h` : f.cron.value.trim() };
+    await api(p ? "PUT" : "POST", "/plans" + (p ? "/" + p.id : ""), body);
+    m.close(); toast("Plan saved"); pages.plans($("#main"));
+  });
+}
+
+// ---------- backup sets ----------
+pages.sets = async main => {
+  state.reload = () => pages.sets(main);
+  const [sets, plans] = await Promise.all([api("GET", "/sets"), api("GET", "/plans")]);
+  const pname = id => (plans.find(p => p.id === id) || { name: "(deleted plan)" }).name;
+  const runs = await Promise.all(sets.map(s => api("GET", `/sets/${s.id}/runs`)));
+  main.innerHTML = head("Sets", "Run several plans together, for example one per shard, and keep track of which backups belong to the same moment.", `<button class="btn pri" id="add">New set</button>`) +
+    (sets.length ? sets.map((s, i) => html`<div class="card" style="margin-bottom:16px"><div class="bar"><div><b>${s.name}</b><div class="small mute">${s.planIds.map(pname).join(" + ")} · ${scheduleText(s.schedule)}${s.nextRunAt ? " · next " + ago(s.nextRunAt) : ""}</div></div><span style="flex:1"></span>
+      <button class="btn sm pri" data-run="${s.id}">Run now</button><button class="btn sm" data-edit="${s.id}">Edit</button><button class="btn sm red" data-del="${s.id}">Delete</button></div>
+      <div class="tw">${runs[i].length ? html`<table><thead><tr><th>Run</th><th>Members</th><th>Usable together</th></tr></thead><tbody>${runs[i].map(r => html`<tr><td class="mono">${r.run.split("-").pop()}</td>
+        <td>${r.backups.map(b => html`<div><a href="#" data-b="${b.id}">${b.planName}</a> ${pill(b.status)} <span class="small mute">${b.finishedAt ? when(b.finishedAt) : ""}</span></div>`)}</td>
+        <td>${r.complete ? html`<span class="pill done">complete</span><div class="small mute">Restore every member, then roll each forward to one moment at or after ${when(r.commonFrom)}.</div>` : raw('<span class="pill queued">incomplete</span>')}</td></tr>`)}</tbody></table>` : raw('<div class="empty">No runs yet.</div>')}</div></div>`).join("")
+      : `<div class="card"><div class="empty"><b>No sets yet</b>A set needs at least two plans.</div></div>`);
+  const form = s0 => { const m = modal(html`<form id="sf2"><h2>${s0 ? "Edit set" : "New set"}</h2><div class="f"><label>Name</label><input name="name" required value="${s0?.name || ""}" placeholder="e.g. All shards"></div>
+      <div class="f"><label>Plans in this set</label><div class="pick">${plans.filter(p => p.spec.method !== "binlog").map(p => html`<label><input type="checkbox" value="${p.id}" ${s0?.planIds.includes(p.id) ? raw("checked") : ""}>${p.name}</label>`)}</div></div>
+      <div class="f"><label>Schedule (cron line or @every 24h, empty = manual)</label><input name="schedule" class="mono" value="${s0?.schedule || ""}"><small>Switch off the schedules of the member plans so they do not also run alone.</small></div>
+      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Save set</button></div></form>`.s);
+    $("#sf2", m.el).onsubmit = run(async e => { e.preventDefault(); const f = e.target;
+      await api(s0 ? "PUT" : "POST", "/sets" + (s0 ? "/" + s0.id : ""), { name: f.name.value, schedule: f.schedule.value.trim(), planIds: [...f.querySelectorAll(".pick input:checked")].map(c => +c.value) });
+      m.close(); toast("Set saved"); pages.sets(main); }); };
+  $("#add").onclick = () => form(null);
+  main.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => form(sets.find(s => s.id == b.dataset.edit)));
+  main.querySelectorAll("[data-run]").forEach(b => b.onclick = run(async () => { await api("POST", `/sets/${b.dataset.run}/run`, {}); toast("Set started"); pages.sets(main); }));
+  main.querySelectorAll("[data-del]").forEach(b => b.onclick = run(async () => { if (!await confirmBox("Delete this set?", "The plans and their backups are kept.")) return; await api("DELETE", "/sets/" + b.dataset.del); pages.sets(main); }));
+  main.querySelectorAll("[data-b]").forEach(a => a.onclick = e => { e.preventDefault(); openBackup(a.dataset.b); });
+};
+
+// ---------- databases & destinations ----------
+function endpointPage(kind, title, sub, fields, describe) {
+  pages[kind] = async main => {
+    state.reload = null;
+    const list = await api("GET", "/" + kind);
+    main.innerHTML = head(title, sub, `<button class="btn pri" id="add">Add</button>`) + html`<div class="card"><div class="tw">${list.length ? html`<table><thead><tr><th>Name</th><th>Details</th><th id="res"></th><th></th></tr></thead><tbody>${list.map(e => html`<tr><td><b>${e.name}</b><div class="small mute">${e.kind}${e.cfg.agent ? " · via agent " + ((agents.find(a => a.id === e.cfg.agent) || {}).name || e.cfg.agent) : ""}</div></td><td class="mono">${describe(e)}</td><td class="small" data-res="${e.id}"></td>
+      <td style="text-align:right;white-space:nowrap"><button class="btn sm" data-test="${e.id}">Test</button> <button class="btn sm" data-edit="${e.id}">Edit</button> <button class="btn sm red" data-del="${e.id}">Delete</button></td></tr>`)}</tbody></table>` : raw(`<div class="empty"><b>Nothing here yet</b>Click Add to create the first one.</div>`)}</div></div>`.s;
+    const agents = kind === "targets" && state.user.role === "owner" ? await api("GET", "/agents") : [];
+    const form = e => {
+      const c = e ? e.cfg : {}, k0 = e ? e.kind : fields.kinds[0][0];
+      const m = modal(html`<form id="ef"><h2>${e ? "Edit" : "Add"}</h2><div class="f"><label>Name</label><input name="name" required value="${e?.name || ""}"></div>
+        ${fields.kinds.length > 1 ? html`<div class="f"><label>Kind</label><select name="kind">${fields.kinds.map(([v, t]) => html`<option value="${v}" ${v === k0 ? raw("selected") : ""}>${t}</option>`)}</select></div>` : html`<input type="hidden" name="kind" value="${k0}">`}
+        <div id="ff"></div>${agents.length ? html`<div class="f"><label>Runs on</label><select name="agent"><option value="0">This server</option>${agents.map(a => html`<option value="${a.id}" ${c.agent === a.id ? raw("selected") : ""}>Agent: ${a.name}${a.online ? "" : " (offline)"}</option>`)}</select><small>With an agent, host and paths are as seen from the agent's server. Use an S3 destination so the panel can read the backups too.</small></div>` : ""}
+        <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Save</button></div></form>`.s);
+      const f = $("#ef", m.el);
+      const paint = () => $("#ff", f).innerHTML = fields.of(f.kind.value).map(([n, label, type, hint, def]) => html`<div class="f"><label>${label}</label>${type === "lines" ? html`<textarea name="${n}" rows="4" class="mono">${(c[n] || def || []).join("\n")}</textarea>` : type === "checkbox" ? html`<input type="checkbox" name="${n}" style="width:auto" ${c[n] ? raw("checked") : ""}>` : html`<input name="${n}" type="${type}" value="${type === "password" ? "" : (c[n] ?? def ?? "")}" placeholder="${type === "password" && e ? "leave empty to keep the stored one" : ""}" autocomplete="off">`}${hint ? html`<small>${hint}</small>` : ""}</div>`).join("");
+      paint(); if (f.kind.tagName === "SELECT") f.kind.onchange = paint;
+      f.onsubmit = run(async ev => {
+        ev.preventDefault();
+        const cfg = {}; let secret;
+        for (const [n, , type] of fields.of(f.kind.value)) { const el = f[n]; if (type === "password") secret = el.value; else if (type === "lines") cfg[n] = el.value.split("\n").map(x => x.trim()).filter(Boolean); else if (type === "checkbox") cfg[n] = el.checked; else if (type === "number") { if (el.value) cfg[n] = +el.value; } else if (el.value.trim()) cfg[n] = el.value.trim(); }
+        if (f.agent && +f.agent.value) cfg.agent = +f.agent.value;
+        await api(e ? "PUT" : "POST", "/" + kind + (e ? "/" + e.id : ""), { name: f.name.value, kind: f.kind.value, cfg, secret });
+        m.close(); toast("Saved"); pages[kind](main);
+      });
+    };
+    $("#add").onclick = () => form(null);
+    main.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => form(list.find(e => e.id == b.dataset.edit)));
+    main.querySelectorAll("[data-del]").forEach(b => b.onclick = run(async () => { if (!await confirmBox("Delete?", "Stored backups are not touched.")) return; await api("DELETE", `/${kind}/${b.dataset.del}`); pages[kind](main); }));
+    main.querySelectorAll("[data-test]").forEach(b => b.onclick = async () => {
+      const cell = main.querySelector(`[data-res="${b.dataset.test}"]`); cell.textContent = "testing…"; cell.style.color = "";
+      try { const r = await api("POST", `/${kind}/${b.dataset.test}/test`, {}); cell.style.color = "var(--ok)";
+        cell.textContent = kind === "targets" ? `OK · ${r.version}${r.tables !== undefined ? " · " + r.tables + (r.version.startsWith("PostgreSQL") ? " databases" : " tables") : ""}${r.bytes !== undefined ? " · " + bytes(r.bytes) : ""}${r.readOnly ? " · replica (read-only)" : ""}` : "OK" + (r.free >= 0 ? " · " + bytes(r.free) + " free" : ""); }
+      catch (e) { cell.style.color = "var(--bad)"; cell.textContent = e.message; }
+    });
+  };
+}
+const EXECF = ["exec", "Run the backup tools in", "text", "local (this server holds the data) or docker:<container name>."];
+endpointPage("targets", "Databases & folders", "What to back up: MySQL / MariaDB, PostgreSQL, Redis, or folders on this server. Point a database at a replica when you have one: the primary then feels nothing.",
+  { kinds: [["mysql", "MySQL / MariaDB"], ["postgres", "PostgreSQL"], ["redis", "Redis"], ["files", "Folders"]], of: k =>
+    k === "files" ? [["paths", "Folders or files, one per line", "lines", "Absolute paths on this server."], ["exclude", "Leave out, one per line", "lines", "A name or pattern (node_modules, *.log) or a full path. Build output is rebuilt from git, so it is left out by default.", ["node_modules", "dist", ".next", ".git", "*.tmp"]]]
+    : k === "redis" ? [["host", "Host", "text", "", "127.0.0.1"], ["port", "Port", "number", "", 6379], ["user", "User (optional)", "text"], ["password", "Password", "password", "Stored encrypted with the master key."]]
+    : k === "postgres" ? [["host", "Host", "text", "", "127.0.0.1"], ["port", "Port", "number", "", 5432], ["user", "User", "text", "", "postgres"], ["password", "Password", "password", "Stored encrypted with the master key."], [...EXECF.slice(0, 3), "Where pg_dump runs: " + EXECF[3] + " Required."]]
+    : [["host", "Host", "text", "", "127.0.0.1"], ["port", "Port", "number", "", 3306], ["socket", "Unix socket (instead of host)", "text", "Optional, e.g. /run/mysqld/mysqld.sock"], ["user", "User", "text", "A read-only backup user is enough for SQL backups: SELECT, SHOW VIEW, TRIGGER, EVENT, BINLOG MONITOR."], ["password", "Password", "password", "Stored encrypted with the master key."], ["tls", "Use TLS when the server offers it", "checkbox"], [...EXECF.slice(0, 3), "Needed for physical backups and binary logs: " + EXECF[3] + " Leave empty for SQL backups only."], ["maxLag", "Replica may be behind by at most (seconds)", "number", "A physical backup from a replica that is further behind is refused. Default 300."]] },
+  e => e.kind === "files" ? (e.cfg.paths || []).join(", ") : e.cfg.socket ? e.cfg.user + "@" + e.cfg.socket : `${e.cfg.user ? e.cfg.user + "@" : ""}${e.cfg.host}:${e.cfg.port || ({ redis: 6379, postgres: 5432 }[e.kind] || 3306)}`);
+endpointPage("destinations", "Destinations", "Where backup files are stored. Keep at least one copy off this server.",
+  { kinds: [["local", "Folder on this server"], ["s3", "S3-compatible storage"]], of: k => k === "local" ? [["path", "Folder", "text", "Absolute path. Created if missing.", "/var/lib/backup-manager/backups"]]
+    : [["endpoint", "Endpoint", "text", "Host only, e.g. s3.eu-central-1.amazonaws.com or <account>.r2.cloudflarestorage.com"], ["region", "Region", "text", "Optional"], ["bucket", "Bucket", "text"], ["prefix", "Folder inside the bucket", "text", "Optional"], ["accessKey", "Access key", "text"], ["password", "Secret key", "password", "Stored encrypted with the master key."], ["useSSL", "Use HTTPS", "checkbox"]] },
+  e => e.kind === "local" ? e.cfg.path : `${e.cfg.endpoint}/${e.cfg.bucket}${e.cfg.prefix ? "/" + e.cfg.prefix : ""}`);
+
+// ---------- jobs ----------
+pages.jobs = async main => {
+  const f = state.lists.jobs ||= { page: 1, state: "" };
+  main.innerHTML = head("Jobs", "The queue. Long jobs keep running when you close this page, and continue after a restart.") + html`<div class="card"><div class="bar"><select id="js"><option value="">Any state</option>${["running","queued","done","failed","cancelled"].map(s => html`<option ${f.state === s ? raw("selected") : ""}>${s}</option>`)}</select></div><div class="tw" id="jl"></div><div id="jp"></div></div>`.s;
+  const load = state.reload = run(async () => {
+    const d = await api("GET", `/jobs?page=${f.page}&pageSize=15&state=${f.state}`);
+    $("#jl").innerHTML = d.items.length ? html`<table><tbody>${d.items.map(jobRow)}</tbody></table>`.s : `<div class="empty"><b>No jobs</b></div>`;
+    bindJobRows($("#jl")); $("#jp").replaceChildren(pager(d.total, f.page, 15, p => { f.page = p; load(); }));
+  });
+  $("#js").onchange = e => { f.state = e.target.value; f.page = 1; load(); };
+  load();
+};
+
+// ---------- settings & activity ----------
+pages.settings = async main => {
+  state.reload = null;
+  const s = await api("GET", "/settings");
+  main.innerHTML = head("Settings", "Where to send alerts.") + html`<form class="card" id="sf" style="padding:20px;max-width:640px">
+    <div class="f"><label>Telegram bot token</label><input name="telegramToken" type="password" placeholder="${s.telegramTokenSet ? "stored — leave empty to keep" : "123456:ABC…"}" autocomplete="off"></div>
+    <div class="f"><label>Telegram chat id</label><input name="telegramChat" value="${s.telegramChat}"></div>
+    <div class="f"><label>Webhook address</label><input name="webhookUrl" value="${s.webhookUrl}" placeholder="https://…"><small>Receives a JSON POST: { event, text }.</small></div>
+    <div class="f"><label style="font-weight:400"><input type="checkbox" name="notifySuccess" style="width:auto" ${s.notifySuccess ? raw("checked") : ""}> Also tell me when a backup succeeds (failures are always sent)</label></div>
+    <div class="acts"><button type="button" class="btn" id="st">Save and send a test</button><button class="btn pri">Save</button></div></form>`.s;
+  const save = test => run(async e => { e.preventDefault(); const f = $("#sf"); await api("PUT", "/settings", { telegramToken: f.telegramToken.value, telegramChat: f.telegramChat.value, webhookUrl: f.webhookUrl.value, notifySuccess: f.notifySuccess.checked, test }); toast(test ? "Saved, test sent" : "Saved"); });
+  $("#sf").onsubmit = save(false); $("#st").onclick = save(true);
+};
+pages.access = async main => {
+  state.reload = null;
+  const owner = state.user.role === "owner";
+  const [meInfo, users, tokens, agentList] = await Promise.all([api("GET", "/me"), owner ? api("GET", "/users") : [], owner ? api("GET", "/tokens") : [], owner ? api("GET", "/agents") : []]);
+  const ROLES = [["viewer", "Viewer — can look"], ["operator", "Operator — can run, verify, download"], ["owner", "Owner — can change everything"]];
+  main.innerHTML = head("Users & access", "Who can sign in, what each one may do, and tokens for scripts.") + html`
+    <div class="card" style="padding:18px;margin-bottom:16px;max-width:760px"><b>My account</b><div class="small mute">${state.user.email} · ${state.user.role}</div>
+      <div class="acts" style="justify-content:flex-start;margin-top:12px"><button class="btn" id="pwBtn">Change password</button>
+        ${meInfo.totp ? raw('<span class="pill done">two-factor sign-in is on</span><button class="btn red" id="tfOff">Turn off two-factor</button>') : raw('<button class="btn pri" id="tfOn">Turn on two-factor sign-in</button>')}</div></div>
+    ${owner ? html`<div class="card" style="margin-bottom:16px"><div class="bar"><b>Accounts</b><span style="flex:1"></span><button class="btn sm pri" id="uAdd">Add account</button></div><div class="tw"><table><thead><tr><th>E-mail</th><th>Role</th><th>Two-factor</th><th>Since</th><th></th></tr></thead><tbody>
+        ${users.map(u => html`<tr><td><b>${u.email}</b></td><td><span class="pill">${u.role}</span></td><td>${u.totp ? raw('<span class="pill done">on</span>') : raw('<span class="mute">off</span>')}</td><td class="mute">${when(u.createdAt)}</td>
+          <td style="text-align:right"><button class="btn sm" data-ue="${u.id}">Edit</button> <button class="btn sm red" data-ud="${u.id}">Delete</button></td></tr>`)}</tbody></table></div></div>
+      <div class="card"><div class="bar"><div><b>API tokens</b><div class="small mute">For scripts and the command line. Send as: Authorization: Bearer &lt;token&gt;</div></div><span style="flex:1"></span><button class="btn sm pri" id="tAdd">New token</button></div><div class="tw">
+        ${tokens.length ? html`<table><thead><tr><th>Name</th><th>Role</th><th>Created</th><th>Last used</th><th></th></tr></thead><tbody>${tokens.map(t => html`<tr><td><b>${t.name}</b></td><td><span class="pill">${t.role}</span></td><td class="mute">${when(t.createdAt)}</td><td class="mute">${t.lastUsed ? ago(t.lastUsed) : "never"}</td><td style="text-align:right"><button class="btn sm red" data-td="${t.id}">Revoke</button></td></tr>`)}</tbody></table>` : raw('<div class="empty">No tokens yet.</div>')}</div></div>
+      <div class="card" style="margin-top:16px"><div class="bar"><div><b>Agents</b><div class="small mute">Back up other servers from this panel. The agent connects out to the panel; no port is opened on the other server.</div></div><span style="flex:1"></span><button class="btn sm pri" id="aAdd">New agent</button></div><div class="tw">
+        ${agentList.length ? html`<table><thead><tr><th>Name</th><th>Server</th><th>Status</th><th></th></tr></thead><tbody>${agentList.map(a => html`<tr><td><b>${a.name}</b></td><td class="mono">${a.hostname || "—"} ${a.version ? "· v" + a.version : ""}</td><td>${a.online ? raw('<span class="pill done">online</span>') : html`<span class="pill failed">offline</span> <span class="small mute">${a.lastSeen ? "seen " + ago(a.lastSeen) : "never connected"}</span>`}</td><td style="text-align:right"><button class="btn sm red" data-ad="${a.id}">Delete</button></td></tr>`)}</tbody></table>` : raw('<div class="empty">No agents yet.</div>')}</div></div>` : ""}`.s;
+  const roleSel = cur => html`<select name="role">${ROLES.map(([v, t]) => html`<option value="${v}" ${v === cur ? raw("selected") : ""}>${t}</option>`)}</select>`;
+  $("#pwBtn").onclick = () => { const m = modal(html`<form id="pwf"><h2>Change password</h2><div class="f"><label>Current password</label><input name="current" type="password" required></div><div class="f"><label>New password</label><input name="next" type="password" required minlength="10"><small>At least 10 characters. Other devices are signed out.</small></div><div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Change</button></div></form>`.s);
+    $("#pwf", m.el).onsubmit = run(async e => { e.preventDefault(); await api("POST", "/me/password", { current: e.target.current.value, new: e.target.next.value }); m.close(); toast("Password changed"); }); };
+  if ($("#tfOn")) $("#tfOn").onclick = run(async () => { const t = await api("POST", "/me/totp/start", {});
+    const m = modal(html`<form id="tff"><h2>Two-factor sign-in</h2><p class="mute">Add this key to an authenticator app (Google Authenticator, Authy, 1Password…), then type the 6-digit code it shows.</p>
+      <div class="f"><label>Key</label><input readonly class="mono" value="${t.secret}" onclick="this.select()"></div><div class="f"><label>Or open this link on the phone</label><input readonly class="mono small" value="${t.uri}" onclick="this.select()"></div>
+      <div class="f"><label>Code</label><input name="code" inputmode="numeric" required autocomplete="off" placeholder="6 digits"></div><div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Turn on</button></div></form>`.s);
+    $("#tff", m.el).onsubmit = run(async e => { e.preventDefault(); const r = await api("POST", "/me/totp/enable", { code: e.target.code.value }); m.close();
+      modal(html`<h2>Save these recovery codes</h2><p class="mute">Each one signs you in once if you lose your phone. They are shown only now.</p><pre id="rcodes">${r.recovery.join("\n")}</pre><div class="acts"><button class="btn pri" data-close>I saved them</button></div>`.s); pages.access(main); }); });
+  if ($("#tfOff")) $("#tfOff").onclick = () => { const m = modal(html`<form id="tfo"><h2>Turn off two-factor</h2><div class="f"><label>Your password</label><input name="password" type="password" required></div><div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn red">Turn off</button></div></form>`.s);
+    $("#tfo", m.el).onsubmit = run(async e => { e.preventDefault(); await api("POST", "/me/totp/disable", { password: e.target.password.value }); m.close(); pages.access(main); }); };
+  if (!owner) return;
+  const userForm = u => { const m = modal(html`<form id="uf"><h2>${u ? "Edit account" : "Add account"}</h2><div class="f"><label>E-mail</label><input name="email" type="email" required value="${u?.email || ""}" ${u ? raw("readonly") : ""}></div>
+      <div class="f"><label>Role</label>${roleSel(u?.role || "operator")}</div><div class="f"><label>${u ? "New password (empty = keep)" : "Password"}</label><input name="password" type="password" ${u ? "" : raw("required")} minlength="10"></div>
+      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Save</button></div></form>`.s);
+    $("#uf", m.el).onsubmit = run(async e => { e.preventDefault(); const f = e.target; await api(u ? "PUT" : "POST", "/users" + (u ? "/" + u.id : ""), { email: f.email.value, role: f.role.value, password: f.password.value }); m.close(); toast("Saved"); pages.access(main); }); };
+  $("#uAdd").onclick = () => userForm(null);
+  main.querySelectorAll("[data-ue]").forEach(b => b.onclick = () => userForm(users.find(u => u.id == b.dataset.ue)));
+  main.querySelectorAll("[data-ud]").forEach(b => b.onclick = run(async () => { if (!await confirmBox("Delete this account?", "It is signed out everywhere at once.")) return; await api("DELETE", "/users/" + b.dataset.ud); pages.access(main); }));
+  $("#tAdd").onclick = () => { const m = modal(html`<form id="tf"><h2>New API token</h2><div class="f"><label>Name</label><input name="name" required placeholder="e.g. deploy script"></div><div class="f"><label>Role</label>${roleSel("operator")}</div><div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Create</button></div></form>`.s);
+    $("#tf", m.el).onsubmit = run(async e => { e.preventDefault(); const r = await api("POST", "/tokens", { name: e.target.name.value, role: e.target.role.value }); m.close();
+      modal(html`<h2>Copy the token now</h2><p class="mute">It is shown only this once.</p><pre id="newTok">${r.token}</pre><div class="acts"><button class="btn pri" data-close>Done</button></div>`.s); pages.access(main); }); };
+  $("#aAdd").onclick = () => { const m = modal(html`<form id="af"><h2>New agent</h2><div class="f"><label>Name</label><input name="name" required placeholder="e.g. db-server-2"></div><div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Create</button></div></form>`.s);
+    $("#af", m.el).onsubmit = run(async e => { e.preventDefault(); const r = await api("POST", "/agents", { name: e.target.name.value }); m.close();
+      modal(html`<h2>Start the agent on the other server</h2><p class="mute">Install Backup Manager there, then run this (the token is shown only now):</p><pre id="agentCmd">backup-manager agent --server ${location.origin} --token ${r.token}</pre><p class="mute small">Then add its databases under “Databases & folders” and choose this agent in “Runs on”.</p><div class="acts"><button class="btn pri" data-close>Done</button></div>`.s); pages.access(main); }); };
+  main.querySelectorAll("[data-ad]").forEach(b => b.onclick = run(async () => { if (!await confirmBox("Delete this agent?", "Its token stops working at once.")) return; await api("DELETE", "/agents/" + b.dataset.ad); pages.access(main); }));
+  main.querySelectorAll("[data-td]").forEach(b => b.onclick = run(async () => { if (!await confirmBox("Revoke this token?", "Scripts using it stop working at once.")) return; await api("DELETE", "/tokens/" + b.dataset.td); pages.access(main); }));
+};
+pages.audit = async main => {
+  state.reload = null;
+  let page = 1;
+  main.innerHTML = head("Activity", "Who did what: sign-ins, downloads, deletions, changes.") + `<div class="card"><div class="tw" id="al"></div><div id="ap"></div></div>`;
+  const load = run(async () => {
+    const d = await api("GET", "/audit?page=" + page);
+    $("#al").innerHTML = html`<table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th><th>From</th></tr></thead><tbody>${d.items.map(a => html`<tr><td class="mute">${when(a.at)}</td><td>${a.actor}</td><td><span class="pill">${a.action}</span></td><td class="small">${a.detail}</td><td class="mono mute">${a.ip}</td></tr>`)}</tbody></table>`.s;
+    $("#ap").replaceChildren(pager(d.total, page, 50, p => { page = p; load(); }));
+  });
+  load();
+};
+
+boot().catch(e => { $("#root").innerHTML = `<div class="auth"><div class="card" style="padding:28px">Cannot reach the server: ${esc(e.message)}</div></div>`; });
+</script>
+</body>
+</html>

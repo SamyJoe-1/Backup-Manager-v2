@@ -1,0 +1,17 @@
+# docker compose up -d      then:  docker compose exec backup-manager backup-manager setup-link
+services:
+  backup-manager:
+    image: backup-manager
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8750:8750"        # this machine only; put HTTPS in front to open it up
+    environment:
+      BM_PUBLIC_URL: "http://127.0.0.1:8750"
+    volumes:
+      - bm-data:/data                # catalog, master key and local backups: back this volume up too
+      # Needed only for physical backups of databases in other containers, the sandbox and restore tests
+      # (it gives this container control of Docker on the host; leave it out if you do not use those):
+      # - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  bm-data:
